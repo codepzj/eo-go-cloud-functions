@@ -37,18 +37,20 @@ func clientIP(c *gin.Context) string {
 }
 
 func clientCountry(c *gin.Context) gin.H {
-	code := firstHeader(c, "EO-Client-IPCountry", "X-EO-Geo-Country-Code-Alpha2", "CF-IPCountry")
+	code := firstHeader(c, "EO-Client-IPCountry")
 
-	name := firstHeader(c, "EO-Client-IPCountryName", "X-EO-Geo-Country-Name")
+	name := firstHeader(c, "EO-Client-IPCountryName")
 
-	region := firstHeader(c, "EO-Client-IPRegion", "X-EO-Geo-Region-Name")
-	city := firstHeader(c, "EO-Client-IPCity", "X-EO-Geo-City-Name")
+	region := firstHeader(c, "EO-Client-IPRegion")
+	city := firstHeader(c, "EO-Client-IPCity")
+	header := c.Request.Header
 
 	return gin.H{
 		"code":   code,
 		"name":   name,
 		"region": region,
 		"city":   city,
+		"header": header,
 	}
 }
 
