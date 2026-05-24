@@ -6,18 +6,18 @@ import (
 	"cloud-functions/internal/service"
 	"cloud-functions/pkg/logger"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// 加载配置
 	config := conf.GetConfig()
 
-	// 初始化基础设施
 	logger.NewLogger(&logger.Option{
 		Format: config.Log.Format,
 		Level:  config.Log.Level,
@@ -33,8 +33,8 @@ func main() {
 	healthHandler := handler.NewHealthHandler(healthSvc)
 	demoHandler := handler.NewDemoHandler()
 
-	// 注册路由
 	r := gin.Default()
+
 	r.GET("/health", healthHandler.Health)
 
 	v1 := r.Group("/v1")
@@ -57,7 +57,14 @@ func main() {
 	}
 
 	go func() {
-		r.Run(fmt.Sprintf(":%d", config.Port))
+		// 本地 dev 不会剥离 /api 前缀，在 Gin 路由匹配前统一处理；
+		// 生产环境 EdgeOne 已剥离，/v1/* 路径不受影响。
+		if err := http.ListenAndServe(
+			fmt.Sprintf(":%d", config.Port),
+			devAPIPrefixStrip(r),
+		); err != nil && err != http.ErrServerClosed {
+			panic(err)
+		}
 	}()
 
 	quit := make(chan os.Signal, 1)
@@ -65,4 +72,16 @@ func main() {
 	<-quit
 
 	logger.Info("server shutdown gracefully...")
+}
+
+func devAPIPrefixStrip(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if path := r.URL.Path; path == "/api" || strings.HasPrefix(path, "/api/") {
+			r.URL.Path = strings.TrimPrefix(path, "/api")
+			if r.URL.Path == "" {
+				r.URL.Path = "/"
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
 }

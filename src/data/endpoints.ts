@@ -8,7 +8,8 @@ export type ApiEndpoint = {
   body?: string
 }
 
-export const ROUTE_CODE = `package main
+export const ROUTE_CODE = `// cloud-functions/api.go
+package main
 
 import (
     "github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func main() {
     r := gin.Default()
 
     // REST API v1 group
-    v1 := r.Group("/api/v1")
+    v1 := r.Group("/v1")
     {
         v1.GET("/hello", helloHandler)
         v1.GET("/health", healthHandler)
@@ -40,7 +41,7 @@ func main() {
         }
     }
 
-    r.Run(":2574")
+    r.Run(":9000")
 }`
 
 export const API_ENDPOINTS: ApiEndpoint[] = [

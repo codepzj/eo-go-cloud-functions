@@ -12,7 +12,6 @@ export default defineConfig({
     },
   },
   server: {
-    // EdgeOne dev proxy connects via 127.0.0.1; default localhost is IPv6-only on macOS.
-    host: "127.0.0.1",
-  },
+    host: "127.0.0.1"
+  }
 })

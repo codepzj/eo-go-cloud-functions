@@ -8,7 +8,7 @@ export function CodePreview() {
         <span className="size-2.5 rounded-full bg-[#febc2e]" />
         <span className="size-2.5 rounded-full bg-[#28c840]" />
         <span className="ml-2 font-mono text-xs text-white/50">
-          cloud-functions/index.go
+          cloud-functions/api.go
         </span>
       </div>
       <pre className="max-h-[420px] overflow-auto p-5 font-mono text-[13px] leading-relaxed text-[#e6edf3]">
