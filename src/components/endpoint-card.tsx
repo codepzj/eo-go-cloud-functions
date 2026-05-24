@@ -41,7 +41,11 @@ export function EndpointCard({ endpoint, index }: EndpointCardProps) {
       })
 
       setMeta({ status: response.status, duration: response.duration })
-      setResult(JSON.stringify(response.data, null, 2))
+      setResult(
+        typeof response.data === "string"
+          ? response.data
+          : JSON.stringify(response.data, null, 2)
+      )
 
       if (!response.ok) {
         setError(`HTTP ${response.status}`)

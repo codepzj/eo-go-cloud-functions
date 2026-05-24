@@ -35,8 +35,8 @@ export function App() {
               <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
                 Gin
               </code>{" "}
-              framework. Features routing groups, middleware, JSON binding, and
-              dynamic parameters.
+              framework. Call the API to inspect client IP, country, and service
+              health powered by EdgeOne edge headers.
             </p>
           </div>
 

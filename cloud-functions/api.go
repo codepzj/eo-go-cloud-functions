@@ -29,36 +29,18 @@ func main() {
 	})
 	defer logger.Sync()
 
-	healthSvc := service.NewHealthService()
-	healthHandler := handler.NewHealthHandler(healthSvc)
-	demoHandler := handler.NewDemoHandler()
+	healthHandler := handler.NewHealthHandler(service.NewHealthService())
+	geoHandler := handler.NewGeoHandler()
 
 	r := gin.Default()
 
-	r.GET("/health", healthHandler.Health)
-
 	v1 := r.Group("/v1")
 	{
-		v1.GET("/hello", demoHandler.Hello)
-		v1.GET("/health", demoHandler.Health)
-
-		users := v1.Group("/users")
-		{
-			users.GET("", demoHandler.ListUsers)
-			users.GET("/:id", demoHandler.GetUser)
-			users.POST("", demoHandler.CreateUser)
-		}
-
-		posts := v1.Group("/posts")
-		{
-			posts.GET("", demoHandler.ListPosts)
-			posts.GET("/:id", demoHandler.GetPost)
-		}
+		v1.GET("/health", healthHandler.Health)
+		v1.GET("/geo", geoHandler.Geo)
 	}
 
 	go func() {
-		// 本地 dev 不会剥离 /api 前缀，在 Gin 路由匹配前统一处理；
-		// 生产环境 EdgeOne 已剥离，/v1/* 路径不受影响。
 		if err := http.ListenAndServe(
 			fmt.Sprintf(":%d", config.Port),
 			devAPIPrefixStrip(r),

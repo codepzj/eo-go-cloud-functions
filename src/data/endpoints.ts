@@ -11,34 +11,15 @@ export type ApiEndpoint = {
 export const ROUTE_CODE = `// cloud-functions/api.go
 package main
 
-import (
-    "github.com/gin-gonic/gin"
-    "net/http"
-)
+import "github.com/gin-gonic/gin"
 
 func main() {
     r := gin.Default()
 
-    // REST API v1 group
     v1 := r.Group("/v1")
     {
-        v1.GET("/hello", helloHandler)
         v1.GET("/health", healthHandler)
-
-        // Users group
-        users := v1.Group("/users")
-        {
-            users.GET("", listUsersHandler)
-            users.GET("/:id", getUserHandler)
-            users.POST("", createUserHandler)
-        }
-
-        // Posts group
-        posts := v1.Group("/posts")
-        {
-            posts.GET("", listPostsHandler)
-            posts.GET("/:id", getPostHandler)
-        }
+        v1.GET("/geo", geoHandler)
     }
 
     r.Run(":9000")
@@ -46,65 +27,32 @@ func main() {
 
 export const API_ENDPOINTS: ApiEndpoint[] = [
   {
-    id: "hello",
-    method: "GET",
-    path: "/api/v1/hello",
-    description: "Simple GET route returning a welcome message",
-  },
-  {
     id: "health",
     method: "GET",
     path: "/api/v1/health",
-    description: "Health check endpoint with Go runtime info",
+    description: "Health check with Go version and server timestamp",
   },
   {
-    id: "users-list",
+    id: "geo",
     method: "GET",
-    path: "/api/v1/users",
-    description: "GET route with JSON array response",
-  },
-  {
-    id: "users-get",
-    method: "GET",
-    path: "/api/v1/users/42",
-    description: 'Dynamic route parameter with c.Param("id")',
-  },
-  {
-    id: "users-create",
-    method: "POST",
-    path: "/api/v1/users",
-    description: "POST route with JSON request body binding",
-    body: JSON.stringify(
-      { name: "Alice", email: "alice@example.com" },
-      null,
-      2
-    ),
-  },
-  {
-    id: "posts-list",
-    method: "GET",
-    path: "/api/v1/posts",
-    description: "Another resource group demonstrating route organization",
-  },
-  {
-    id: "posts-get",
-    method: "GET",
-    path: "/api/v1/posts/7",
-    description: "Dynamic param in posts group",
+    path: "/api/v1/geo",
+    description:
+      "Client IP and country from EdgeOne headers (EO-Client-IP, EO-Client-IPCountry)",
   },
 ]
 
 export const FEATURES = [
   {
-    title: "Routing Groups",
-    description: "Organize APIs with nested route groups and middleware",
+    title: "Client Geo",
+    description:
+      "Read client IP and country from EdgeOne origin-pull headers",
   },
   {
-    title: "JSON Binding",
-    description: "Automatic request body parsing with struct validation",
+    title: "Health Check",
+    description: "Service status with Go runtime version and UTC timestamp",
   },
   {
-    title: "Middleware Support",
-    description: "Custom middleware for logging, auth, and more",
+    title: "Gin Framework",
+    description: "High-performance HTTP routing on EdgeOne Cloud Functions",
   },
 ]
