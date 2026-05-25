@@ -5,12 +5,6 @@ import (
 	"cloud-functions/internal/handler"
 	"cloud-functions/internal/service"
 	"cloud-functions/pkg/logger"
-	"fmt"
-	"net/http"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,30 +34,5 @@ func main() {
 		v1.GET("/geo", geoHandler.Geo)
 	}
 
-	go func() {
-		if err := http.ListenAndServe(
-			fmt.Sprintf(":%d", config.Port),
-			devAPIPrefixStrip(r),
-		); err != nil && err != http.ErrServerClosed {
-			panic(err)
-		}
-	}()
-
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	<-quit
-
-	logger.Info("server shutdown gracefully...")
-}
-
-func devAPIPrefixStrip(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if path := r.URL.Path; path == "/api" || strings.HasPrefix(path, "/api/") {
-			r.URL.Path = strings.TrimPrefix(path, "/api")
-			if r.URL.Path == "" {
-				r.URL.Path = "/"
-			}
-		}
-		next.ServeHTTP(w, r)
-	})
+	r.Run(":9000")
 }

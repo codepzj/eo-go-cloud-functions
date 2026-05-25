@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -14,51 +15,38 @@ func NewGeoHandler() *GeoHandler {
 }
 
 func (h *GeoHandler) Geo(c *gin.Context) {
-	ip := clientIP(c)
-	country := clientCountry(c)
+	ip := c.Request.Header.Get("EO-Client-IP")
+	geo := c.Request.Header.Get("EO-Connecting-Geo")
+
+	// 解码 geo header
+	geoDecoded, err := url.QueryUnescape(geo)
+	if err != nil {
+		RespondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// k1="v1" k2="v2" -> k1=v1&k2=v2
+	urlQuery := strings.ReplaceAll(strings.ReplaceAll(geoDecoded, " ", "&"), "\"", "")
+
+	// 解析 url query
+	geoParsed, err := url.ParseQuery(urlQuery)
+	if err != nil {
+		RespondError(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	country := geoParsed.Get("nation_alpha2") // 首字母大写的国家代码
+	region := geoParsed.Get("region_name")    // 地区名称
+	city := geoParsed.Get("city_name")        // 城市名称
+	latitude := geoParsed.Get("latitude")     // 纬度
+	longitude := geoParsed.Get("longitude")   // 经度
 
 	RespondSuccess(c, http.StatusOK, gin.H{
-		"ip":      ip,
-		"country": country,
+		"ip":        ip,
+		"country":   country,
+		"region":    region,
+		"city":      city,
+		"latitude":  latitude,
+		"longitude": longitude,
 	})
-}
-
-func clientIP(c *gin.Context) string {
-	for _, key := range []string{"EO-Client-IP"} {
-		if value := strings.TrimSpace(c.GetHeader(key)); value != "" {
-			if key == "X-Forwarded-For" {
-				return strings.TrimSpace(strings.Split(value, ",")[0])
-			}
-			return value
-		}
-	}
-
-	return c.ClientIP()
-}
-
-func clientCountry(c *gin.Context) gin.H {
-	code := firstHeader(c, "EO-Client-IPCountry")
-
-	name := firstHeader(c, "EO-Client-IPCountryName")
-
-	region := firstHeader(c, "EO-Client-IPRegion")
-	city := firstHeader(c, "EO-Client-IPCity")
-	header := c.Request.Header
-
-	return gin.H{
-		"code":   code,
-		"name":   name,
-		"region": region,
-		"city":   city,
-		"header": header,
-	}
-}
-
-func firstHeader(c *gin.Context, keys ...string) string {
-	for _, key := range keys {
-		if value := strings.TrimSpace(c.GetHeader(key)); value != "" {
-			return value
-		}
-	}
-	return ""
 }
