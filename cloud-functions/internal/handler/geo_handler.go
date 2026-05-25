@@ -15,7 +15,7 @@ func NewGeoHandler() *GeoHandler {
 }
 
 func (h *GeoHandler) Geo(c *gin.Context) {
-	ip := c.Request.Header.Get("EO-Client-IP")
+	ip := c.ClientIP()
 	geo := c.Request.Header.Get("EO-Connecting-Geo")
 
 	// 解码 geo header
